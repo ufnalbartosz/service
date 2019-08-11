@@ -10,7 +10,7 @@ from service.event_queue import EventQueue
 
 class EventCounterService:
     event_expiration_time = 60  # minutes
-    background_task_interval = 60  # seconds
+    background_task_interval = 10  # seconds
 
     def __init__(self):
         self.events = EventQueue(self.event_expiration_time)
@@ -19,7 +19,7 @@ class EventCounterService:
     async def register(self, event_id: str, user_id: str) -> bool:
         try:
             await self.events.put(Event(event_id, user_id))
-            applog.debug(list(self.events.get_events_within_interval(1)))  # FIXME remove debug
+            # applog.debug(list(self.events.get_events_within_interval(1)))  # FIXME remove debug
         except Exception as exc:
             applog.debug(f'error happened: {type(exc)}')
             traceback.print_exc()
@@ -46,4 +46,5 @@ class EventCounterService:
             # NOTE: not ideal but left for future debug
             applog.debug(f'expired events: {set(self.events._queue) - set(events._queue)}')
             self.events = events
+            # TODO: min(delta soonest event to expire, default bg task interval)
             await asyncio.sleep(self.background_task_interval)

@@ -67,5 +67,5 @@ class ServiceHandler:
     async def cleanup_background_tasks(self, app):
         applog.info('cleaning up background task')
         self.service.background_task_running = False
-        app['bg-task'].cancel()
+        # app['bg-task'].cancel()
         await app['bg-task']

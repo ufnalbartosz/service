@@ -2,6 +2,7 @@ from setuptools import setup, find_packages
 
 TESTS_REQUIRES = [
     'pytest',
+    'pytest-aiohttp',
 ]
 INSTALL_REQUIRES = [
     'aiohttp',
