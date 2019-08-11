@@ -4,6 +4,7 @@ TESTS_REQUIRES = []
 INSTALL_REQUIRES = [
     'aiohttp',
     'aiojobs',
+    'janus',
     'marshmallow',
 ]
 setup(
