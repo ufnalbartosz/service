@@ -1,13 +1,12 @@
 import json
+import typing
 import datetime
 import asyncio
 import traceback
 import collections
-from .logger import applog
 from aiohttp import web
-from typing import Mapping
 
-from marshmallow import Schema, fields
+from .logger import applog
 
 
 class Event:
@@ -27,6 +26,7 @@ class EventQueue(asyncio.PriorityQueue):
     def __init__(self, event_expiration_time: int, **kwargs):
         super().__init__(**kwargs)
         self.event_expiration_time = event_expiration_time
+        self.mutex = asyncio.Lock()
 
     def get_events_within_interval(self, interval: int):
         timespan_beginning = datetime.datetime.now() - datetime.timedelta(minutes=interval)
@@ -57,11 +57,12 @@ class EventQueue(asyncio.PriorityQueue):
         delta = datetime.timedelta(minutes=self.event_expiration_time)
         expiration_threshold = now - delta
         actual_events = EventQueue(self.event_expiration_time)
-        for event in self:
-            if event.timestamp > expiration_threshold:
-                await actual_events.put(event)
-            else:
-                break
+        async with self.mutex:
+            for event in self:
+                if event.timestamp > expiration_threshold:
+                    await actual_events.put(event)
+                else:
+                    break
         return actual_events
 
 
@@ -91,7 +92,7 @@ class EventCounterService:
                 user_ids.add(event.user)
         return len(user_ids)
 
-    async def get_all_users_count(self, interval: int) -> Mapping[str, int]:
+    async def get_all_users_count(self, interval: int) -> typing.Mapping[str, int]:
         events_views = collections.defaultdict(set)
         for event in self.events.get_events_within_interval(interval):
             events_views[event.id].add(event.user)
@@ -156,7 +157,6 @@ class ServiceHandler:
         return web.Response(status=200, body=json.dumps(payload))
 
     async def view_events(self, request: web.Request) -> web.Response:
-        # response `[{"eventId":"e1", "views":1}, {"eventId":"e2", "views":5}]`
         interval = int(request.query.get('n'))  # TODO add validation
         # token = request.headers.get('Token')
         events_views = await self.service.get_all_users_count(interval)

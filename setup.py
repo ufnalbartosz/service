@@ -1,11 +1,10 @@
 from setuptools import setup, find_packages
 
-TESTS_REQUIRES = []
+TESTS_REQUIRES = [
+    'pytest',
+]
 INSTALL_REQUIRES = [
     'aiohttp',
-    'aiojobs',
-    'janus',
-    'marshmallow',
 ]
 setup(
     name='service',
