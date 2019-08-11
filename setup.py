@@ -15,7 +15,7 @@ setup(
     tests_requires=TESTS_REQUIRES,
     entry_points={
         'console_scripts': [
-            'run-app=service.webservice:main',
+            'run-app=service.__main__:main',
         ],
     }
 )
