@@ -9,8 +9,8 @@ from service.event_queue import EventQueue
 
 
 class EventCounterService:
-    event_expiration_time = 1  # minutes
-    background_task_interval = 20  # seconds
+    event_expiration_time = 60  # minutes
+    background_task_interval = 60  # seconds
 
     def __init__(self):
         self.events = EventQueue(self.event_expiration_time)
